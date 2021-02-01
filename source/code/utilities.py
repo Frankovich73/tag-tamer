@@ -26,6 +26,9 @@ def get_resource_type_unit(type):
         elif type == "eks":
             resource_type = 'eks'
             unit = 'clusters'
+        elif type == "codepipeline":
+            resource_type = 'codepipeline'
+            unit = 'pipelines'    
         elif type == "lambda":
             resource_type = 'lambda'
             unit = 'functions'

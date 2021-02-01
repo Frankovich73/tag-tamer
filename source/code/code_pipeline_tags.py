@@ -29,7 +29,7 @@ import re
 log = logging.getLogger(__name__)
 
 # Define resources_tags class to get/set resources & their assigned tags
-class code_piipeline_tags:
+class code_pipeline_tags:
     
     # Class constructor
     def __init__(self, resource_type, region):

@@ -13,6 +13,8 @@ from botocore import exceptions
 from collections import OrderedDict
 # Impport csv to create output files
 import csv
+# Import AWS Code Pipeline resources & tags getters & setters
+from code_pipeline_tags import code_pipeline_tags
 # Import AWS EKS clusters resources & tags getters & setters
 from eks_clusters_tags import eks_clusters_tags
 # Import AWS Lambda resources & tags getters & setters
@@ -366,6 +368,10 @@ class resources_tags:
             named_resource_inventory, lambda_resources_status = functions_inventory.get_lambda_names_ids(self.filter_tags, **self.session_credentials)
             return named_resource_inventory, lambda_resources_status
 
+        elif self.unit == "pipelines":
+            pipelines_inventory = code_pipeline_tags(self.resource_type, self.region)
+            named_resource_inventory, code_pipeline_status = pipelines_inventory.get_code_pipeline_ids(self.filter_tags, **self.session_credentials)    
+
         elif self.unit == "clusters":
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
             named_resource_inventory, eks_clusters_status = clusters_inventory.get_eks_clusters_ids(self.filter_tags, **self.session_credentials)
@@ -559,6 +565,10 @@ class resources_tags:
         elif self.unit == 'functions':
             functions_inventory = lambda_resources_tags(self.resource_type, self.region)
             tagged_resource_inventory, returned_status = functions_inventory.get_lambda_resources_tags(self.chosen_resources, **self.session_credentials)
+
+        elif self.unit == 'pipelines':
+            pipelines_inventory = code_pipeline_tags(self.resource_type, self.region)
+            tagged_resource_inventory, returned_status = pipelines_inventory.get_pipeline_resources_tags(self.chosen_resources, **self.session_credentials)    
         
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
@@ -663,6 +673,11 @@ class resources_tags:
             sorted_tag_keys_inventory, lambda_resources_status = functions_inventory.get_lambda_tag_keys(**self.session_credentials)
             return sorted_tag_keys_inventory, lambda_resources_status
 
+        elif self.unit == 'pipelines':
+            pipelines_inventory = code_pipeline_tags(self.resource_type, self.region)
+            sorted_tag_keys_inventory, code_pipeline_status = pipelines_inventory.get_pipeline_tag_keys(**self.session_credentials)
+            return sorted_tag_keys_inventory, code_pipeline_status    
+
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
             sorted_tag_keys_inventory, eks_clusters_status = clusters_inventory.get_eks_clusters_keys(**self.session_credentials) 
@@ -761,6 +776,11 @@ class resources_tags:
             functions_inventory = lambda_resources_tags(self.resource_type, self.region)
             sorted_tag_values_inventory, lambda_resources_status = functions_inventory.get_lambda_tag_values(**self.session_credentials)
             return sorted_tag_values_inventory, lambda_resources_status
+
+        elif self.unit == 'pipelines':
+            pipelines_inventory = code_pipeline_tags(self.resource_type, self.region)
+            sorted_tag_values_inventory, code_pipeline_status = pipelines_inventory.get_pipeline_tag_values(**self.session_credentials)
+            return sorted_tag_values_inventory, code_pipeline_status    
 
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
@@ -888,6 +908,11 @@ class resources_tags:
             functions_inventory = lambda_resources_tags(self.resource_type, self.region)
             lambda_resources_status = functions_inventory.set_lambda_resources_tags(resources_to_tag, chosen_tags, **self.session_credentials)
             return lambda_resources_status
+
+        elif self.unit == 'pipelines':
+            pipelines_inventory = code_pipeline_tags(self.resource_type, self.region)
+            code_pipeline_status = pipelines_inventory.set_pipeline_resources_tags(resources_to_tag, chosen_tags, **self.session_credentials)
+            return code_pipeline_status    
         
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
