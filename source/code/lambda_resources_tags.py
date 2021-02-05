@@ -44,6 +44,8 @@ class lambda_resources_tags:
         tag_value1_state = True if self.filter_tags.get('tag_value1') else False
         tag_key2_state = True if self.filter_tags.get('tag_key2') else False
         tag_value2_state = True if self.filter_tags.get('tag_value2') else False
+        if not self.filter_tags.get('conjunction'):
+            self.filter_tags['conjunction'] = 'AND'
         resource_inventory = dict()
 
         self.session_credentials = {}
@@ -296,11 +298,11 @@ class lambda_resources_tags:
                     tagged_resource_inventory[resource_id_name[0]] = sorted_resource_tags
                     my_status.success(message='Resources and tags found!')
             else:
-                tagged_resource_inventory["No Resource Found"] = {"No Tags Found": "No Tags Found"}
+                tagged_resource_inventory["No Resource Found"] = {"No Tag Keys Found": "No Tag Values Found"}
                 my_status.warning(message='No AWS Lambda functions found!')
         except botocore.exceptions.ClientError as error:
             log.error("Boto3 API returned error: {}".format(error))
-            tagged_resource_inventory["No Resource Found"] = {"No Tags Found": "No Tags Found"}
+            tagged_resource_inventory["No Resource Found"] = {"No Tag Keys Found": "No Tag Values Found"}
             if error.response['Error']['Code'] == 'AccessDeniedException' or error.response['Error']['Code'] == 'UnauthorizedOperation':
                 
                 my_status.error(message='You are not authorized to view these resources')
@@ -396,35 +398,33 @@ class lambda_resources_tags:
                     response = client.list_tags(
                         Resource=function_arn
                     )
-                    try:
-                        # Add all tag keys to the list
+                    if len(response.get('Tags')):
+                        # Add all tag values to the list
                         for tag_key, tag_value in response['Tags'].items():       
                             # Exclude any AWS-applied tags which begin with "aws:"
                             if not re.search("^aws:", tag_key) and tag_value:
                                 tag_values_inventory.append(tag_value)
-                    except:
-                        #tag_values_inventory.append("No tag values found")
-                        tag_values_inventory.append("")
-                        my_status.warning(message='No tags found for this resource.')
                 except botocore.exceptions.ClientError as error:
                     log.error("Boto3 API returned error: {}".format(error))
-                    #tag_values_inventory.append("No tag values found")
-                    tag_values_inventory.append("")
                     if error.response['Error']['Code'] == 'AccessDeniedException' or error.response['Error']['Code'] == 'UnauthorizedOperation':                        
                         my_status.error(message='You are not authorized to view these resources')
                     else:
                         my_status.error()
-            
-            my_status.success(message='Resources and tags found!')
+                    return tag_values_inventory, my_status.get_status()
                 
+            # Set success if tag values found else set warning
+            if len(tag_values_inventory):
+                my_status.success(message='Tag values found!')
+            else:
+                my_status.warning(message='No tag values found for this resource type.')
+
         except botocore.exceptions.ClientError as error:
             log.error("Boto3 API returned error: {}".format(error))
-            #tag_values_inventory.append("No tag values found")
-            tag_values_inventory.append("")
             if error.response['Error']['Code'] == 'AccessDeniedException' or error.response['Error']['Code'] == 'UnauthorizedOperation':                    
                 my_status.error(message='You are not authorized to view these resources')
             else:
                 my_status.error()
+            return tag_values_inventory, my_status.get_status()
         
         #Remove duplicate tags & sort
         tag_values_inventory = list(set(tag_values_inventory))
@@ -461,7 +461,7 @@ class lambda_resources_tags:
                         Resource=resource_arn,
                         Tags=tag_dict
                     )
-                    my_status.success(message='Tags updated successfully!')
+                    my_status.success(message='Lambda function tags updated successfully!')
                 except botocore.exceptions.ClientError as error:
                     log.error("Boto3 API returned error: {}".format(error))
                     resources_updated_tags["No Resources Found"] = "No Tags Applied"

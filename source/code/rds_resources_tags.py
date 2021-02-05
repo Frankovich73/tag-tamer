@@ -44,6 +44,8 @@ class rds_resources_tags:
         tag_value1_state = True if self.filter_tags.get('tag_value1') else False
         tag_key2_state = True if self.filter_tags.get('tag_key2') else False
         tag_value2_state = True if self.filter_tags.get('tag_value2') else False
+        if not self.filter_tags.get('conjunction'):
+            self.filter_tags['conjunction'] = 'AND'
         resource_inventory = dict()
 
         self.session_credentials = {}
@@ -299,11 +301,11 @@ class rds_resources_tags:
                     tagged_resource_inventory[resource_id_name[0]] = sorted_resource_tags
                     my_status.success(message='Resources and tags found!')
             else:
-                tagged_resource_inventory["No Resource Found"] = {"No Tags Found": "No Tags Found"}
+                tagged_resource_inventory["No Resource Found"] = {"No Tag Keys Found": "No Tag Values Found"}
                 my_status.warning(message='No AWS resources found!')
         except botocore.exceptions.ClientError as error:
             log.error("Boto3 API returned error: {}".format(error))
-            tagged_resource_inventory["No Resource Found"] = {"No Tags Found": "No Tags Found"}
+            tagged_resource_inventory["No Resource Found"] = {"No Tag Keys Found": "No Tag Values Found"}
             if error.response['Error']['Code'] == 'AccessDeniedException' or error.response['Error']['Code'] == 'UnauthorizedOperation':
                 
                 my_status.error(message='You are not authorized to view these resources')
@@ -383,19 +385,24 @@ class rds_resources_tags:
             # Interate all the resources in the region
             my_resources = client.describe_db_clusters()
             if len(my_resources['DBClusters']) == 0:
-                tag_values_inventory.append("No tag values found")
+                #tag_values_inventory.append("No tag values found")
                 my_status.warning(message='No Amazon RDS clusters found!')
             else:
                 for item in my_resources['DBClusters']:
-                    if item.get('TagList'):
+                    if len(item.get('TagList')):
                         # Add all tag keys to the list
                         for tag in item['TagList']:       
                                 if not re.search("^aws:", tag['Values']):
                                     tag_values_inventory.append(tag['Values'])
-                        my_status.success(message='Resources and tags found!')
-                    else:
-                        tag_values_inventory.append("No tag values found")
-                        my_status.warning(message='No resource tags found.')		
+                    #    my_status.success(message='Tag values found!')
+                    #else:
+                    #    tag_values_inventory.append("No tag values found")
+                    #    my_status.warning(message='No resource tags found.')
+            # Set success if tag values found else set warning
+            if len(tag_values_inventory):
+                my_status.success(message='Tag values found!')
+            else:
+                my_status.warning(message='No tag values found for this resource type.')		
                 
         except botocore.exceptions.ClientError as error:
             log.error("Boto3 API returned error: {}".format(error))
@@ -405,6 +412,7 @@ class rds_resources_tags:
                 my_status.error(message='You are not authorized to view these resources')
             else:
                 my_status.error()
+            return tag_values_inventory, my_status.get_status()
         
         #Remove duplicate tags & sort
         tag_values_inventory = list(set(tag_values_inventory))
@@ -436,7 +444,7 @@ class rds_resources_tags:
                         ResourceName=resource_arn,
                         Tags=chosen_tags
                     )
-                    my_status.success(message='Tags updated successfully!')
+                    my_status.success(message='RDS Cluster tags updated successfully!')
                 except botocore.exceptions.ClientError as error:
                     log.error("Boto3 API returned error: {}".format(error))
                     resources_updated_tags["No Resources Found"] = "No Tags Applied"

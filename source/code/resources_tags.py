@@ -244,9 +244,9 @@ class resources_tags:
                                     for tag in resource['Tags']:
                                         if(tag['Key'].lower() == 'name'):
                                             named_resource_inventory[resource['InstanceId']] = tag['Value']
-
                 except botocore.exceptions.ClientError as error:
                     log.error("Boto3 API returned error. function: {} - {}".format(sys._getframe().f_code.co_name, error))
+                    named_resource_inventory["No Resource Found"] = "No Resource Found"
             else:
                 try:
                     named_resources = _get_named_resources('describe_instances')
@@ -280,9 +280,9 @@ class resources_tags:
                                 for tag in item['Tags']:
                                     if(tag['Key'].lower() == 'name'):
                                         named_resource_inventory[item['VolumeId']] = tag['Value']
-
                 except botocore.exceptions.ClientError as error:
                     log.error("Boto3 API returned error. function: {} - {}".format(sys._getframe().f_code.co_name, error))
+                    named_resource_inventory["No Resource Found"] = "No Resource Found"
             else:
                 try:
                     named_resources = _get_named_resources('describe_volumes')
@@ -382,11 +382,49 @@ class resources_tags:
             named_resource_inventory, rds_clusters_status = rds_clusters_inventory.get_rds_names_ids(self.filter_tags, **self.session_credentials)
             return named_resource_inventory, rds_clusters_status
 
+        # Handle case where there are no untagged resources
+        if not len(named_resource_inventory):
+            named_resource_inventory["No Resource Found"] = "No Resource Found"
+
         # Sort the resources based on the resource's name
         ordered_inventory = OrderedDict()
         ordered_inventory = sorted(named_resource_inventory.items(), key=lambda item: item[1])
         return ordered_inventory, my_status.get_status()
-            
+
+    # Create a csv file of returned results for downloading
+    def download_csv(self, file_use_method, region, inventory, user_name):
+        download_file = "./downloads/" + user_name + "-download.csv"
+        file_contents = list()
+        max_tags = 0
+        for resource_id, tags in inventory.items():
+            row = list()
+            if len(tags) > max_tags:
+                max_tags = len(tags)
+            row.append(region)
+            row.append(resource_id)
+            for key, value in tags.items():
+                row.append(key)
+                row.append(value)
+            file_contents.append(row)
+        if file_use_method == "w":
+            header_row = list()
+            header_row.append("AWS Region")
+            header_row.append("Resource ID")
+            iterator = 1
+            while iterator <= max_tags:
+                tag_key_header = "Tag Key" + str(iterator)
+                header_row.append(tag_key_header)
+                tag_value_header = "Tag Value" + str(iterator)
+                header_row.append(tag_value_header)
+                iterator += 1
+        with open(download_file, file_use_method, newline="") as file:
+            writer = csv.writer(file)
+            if file_use_method == "w":
+                writer.writerow(header_row)
+            writer.writerows(file_contents)
+        file.close()
+        #return download_file
+
     # Purpose:  Returns a nested dictionary of every resource & its key:value tags for the chosen resource type
     # Input arguments are Boto3 session credentials, list of chosen resource tuples & user name making request
     def get_resources_tags(self, **session_credentials):
@@ -397,48 +435,19 @@ class resources_tags:
         tagged_resource_inventory = {}
         sorted_tagged_resource_inventory = {}
 
-        self.chosen_resources = session_credentials['chosen_resources']
-        self.user_name = session_credentials['user_name']
+        self.chosen_resources = session_credentials.get('chosen_resources')
+        self.user_name = session_credentials.get('user_name')
+        self.region = session_credentials.get('region')
 
         self.session_credentials = {}
-        self.session_credentials['AccessKeyId'] = session_credentials['AccessKeyId']
-        self.session_credentials['SecretKey'] = session_credentials['SecretKey']
-        self.session_credentials['SessionToken'] = session_credentials['SessionToken']
+        self.session_credentials['AccessKeyId'] = session_credentials.get('AccessKeyId')
+        self.session_credentials['SecretKey'] = session_credentials.get('SecretKey')
+        self.session_credentials['SessionToken'] = session_credentials.get('SessionToken')
         this_session = boto3.session.Session(
             aws_access_key_id=self.session_credentials['AccessKeyId'],
             aws_secret_access_key=self.session_credentials['SecretKey'],
             aws_session_token=self.session_credentials['SessionToken'])
 
-        # Create a csv file of returned results for downloading
-        def _download_csv(inventory, user_name):
-            download_file = "./downloads/" + self.user_name + "-download.csv"
-            file_contents = list()
-            header_row = list()
-            header_row.append("Resource ID")
-            max_tags = 0
-            for resource_id, tags in inventory.items():
-                row = list()
-                if len(tags) > max_tags:
-                    max_tags = len(tags)
-                row.append(resource_id)
-                for key, value in tags.items():
-                    row.append(key)
-                    row.append(value)
-                file_contents.append(row)
-            iterator = 1
-            while iterator <= max_tags:
-                tag_key_header = "Tag Key" + str(iterator)
-                header_row.append(tag_key_header)
-                tag_value_header = "Tag Value" + str(iterator)
-                header_row.append(tag_value_header)
-                iterator += 1
-            with open(download_file, "w", newline="") as file:
-                writer = csv.writer(file)
-                writer.writerow(header_row)
-                writer.writerows(file_contents)
-            file.close()
-            return download_file
-        
         # Interate through resources & inject resource ID's with user-defined tag key:value pairs per resource into a nested dictionary
         # indexed by resource ID
         if self.unit == 'instances':
@@ -511,7 +520,7 @@ class resources_tags:
             except botocore.exceptions.ClientError as error:
                 errorString = "Boto3 API returned error. function: {} - {}"
                 log.error(errorString.format(self.unit, error))
-                tagged_resource_inventory["No Resource Found"] = {"No Tags Found": "No Tags Found"}
+                tagged_resource_inventory["No Resource Found"] = {"No Tag Keys Found": "No Tag Values Found"}
                 if error.response['Error']['Code'] == 'AccessDeniedException' or \
                     error.response['Error']['Code'] == 'UnauthorizedOperation' or \
                     error.response['Error']['Code'] == 'AccessDenied':
@@ -554,7 +563,7 @@ class resources_tags:
             except botocore.exceptions.ClientError as error:
                 errorString = "Boto3 API returned error. function: {} - {}"
                 log.error(errorString.format(self.unit, error))
-                tagged_resource_inventory["No Resource Found"] = {"No Tags Found": "No Tags Found"}
+                tagged_resource_inventory["No Resource Found"] = {"No Tag Keys Found": "No Tag Values Found"}
                 if error.response['Error']['Code'] == 'AccessDeniedException' or \
                     error.response['Error']['Code'] == 'UnauthorizedOperation' or \
                     error.response['Error']['Code'] == 'AccessDenied':
@@ -579,7 +588,6 @@ class resources_tags:
             tagged_resource_inventory, returned_status = rds_clusters_inventory.get_rds_resources_tags(self.chosen_resources, **self.session_credentials)
 
         sorted_tagged_resource_inventory = OrderedDict(sorted(tagged_resource_inventory.items()))
-        download_file = _download_csv(sorted_tagged_resource_inventory, self.user_name)
         
         if not returned_status:
             returned_status = my_status.get_status()
@@ -719,7 +727,7 @@ class resources_tags:
                                 sorted_tag_values_inventory.append(tag["Value"])
                     except:
                         sorted_tag_values_inventory.append("No Tags Found")
-                my_status.success(message='Resources and tags found!')
+                my_status.success(message='Tag values found!')
             except botocore.exceptions.ClientError as error:
                 errorString = "Boto3 API returned error. function: {} - {}"
                 log.error(errorString.format(self.unit, error))
@@ -740,7 +748,7 @@ class resources_tags:
                                 sorted_tag_values_inventory.append(tag["Value"])
                     except:
                         sorted_tag_values_inventory.append("No Tags Found")
-                my_status.success(message='Resources and tags found!')
+                my_status.success(message='Tag values found!')
             except botocore.exceptions.ClientError as error:
                 errorString = "Boto3 API returned error. function: {} - {}"
                 log.error(errorString.format(self.unit, error))
@@ -761,7 +769,7 @@ class resources_tags:
                                 sorted_tag_values_inventory.append(tag["Value"])
                     except:
                         sorted_tag_values_inventory.append("No Tags Found")
-                my_status.success(message='Resources and tags found!')
+                my_status.success(message='Tag values found!')
             except botocore.exceptions.ClientError as error:
                 errorString = "Boto3 API returned error. function: {} - {}"
                 log.error(errorString.format(self.unit, error))
