@@ -206,13 +206,8 @@ Resources:
             #!/bin/bash -xe
             cd /var/tmp
             yum -y install git dos2unix
-<<<<<<< HEAD
-            git clone git clone https://github.com/billdry/tag-tamer.git
-            cd tagtamer/source
-=======
             git clone https://github.com/Frankovich73/tag-tamer.git
             cd tag-tamer/source
->>>>>>> 7add64744a4c3e1003b16972dfe4fd3fc3644818
             dos2unix tagtamer-install.sh
             bash tagtamer-install.sh
       Tags:
