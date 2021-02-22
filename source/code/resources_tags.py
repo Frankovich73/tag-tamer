@@ -371,7 +371,8 @@ class resources_tags:
         elif self.unit == "pipelines":
             pipelines_inventory = code_pipeline_tags(self.resource_type, self.region)
             named_resource_inventory, code_pipeline_status = pipelines_inventory.get_code_pipeline_ids(self.filter_tags, **self.session_credentials)    
-
+            return named_resource_inventory, code_pipeline_status
+            
         elif self.unit == "clusters":
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
             named_resource_inventory, eks_clusters_status = clusters_inventory.get_eks_clusters_ids(self.filter_tags, **self.session_credentials)

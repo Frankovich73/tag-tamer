@@ -390,13 +390,13 @@ class code_pipeline_tags:
         try:
             client = this_session.client(self.resource_type, region_name=self.region)
             # Get all the Code Pipelines in the region
-            my_pipelines = client.list_functions()
+            my_pipelines = client.list_pipelines()
             for item in my_pipelines['pipelines']:
                 code_pipeline_arn=client.get_pipeline(name=item['name'])['metadata']['pipelineArn']
                 try:
                     # Get all the tags for a given Code Pipeline
                     response = client.list_tags_for_resource(
-                        resource=code_pipeline_arn
+                        resourceArn=code_pipeline_arn
                     )
                     try:
                         # Add all tag keys to the list
