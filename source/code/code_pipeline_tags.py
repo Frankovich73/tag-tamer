@@ -29,11 +29,7 @@ import re
 log = logging.getLogger(__name__)
 
 # Define resources_tags class to get/set resources & their assigned tags
-<<<<<<< HEAD
-class code_piipeline_tags:
-=======
 class code_pipeline_tags:
->>>>>>> 7add64744a4c3e1003b16972dfe4fd3fc3644818
     
     # Class constructor
     def __init__(self, resource_type, region):
@@ -394,21 +390,13 @@ class code_pipeline_tags:
         try:
             client = this_session.client(self.resource_type, region_name=self.region)
             # Get all the Code Pipelines in the region
-<<<<<<< HEAD
-            my_pipelines = client.list_functions()
-=======
             my_pipelines = client.list_pipelines()
->>>>>>> 7add64744a4c3e1003b16972dfe4fd3fc3644818
             for item in my_pipelines['pipelines']:
                 code_pipeline_arn=client.get_pipeline(name=item['name'])['metadata']['pipelineArn']
                 try:
                     # Get all the tags for a given Code Pipeline
                     response = client.list_tags_for_resource(
-<<<<<<< HEAD
-                        resource=code_pipeline_arn
-=======
                         resourceArn=code_pipeline_arn
->>>>>>> 7add64744a4c3e1003b16972dfe4fd3fc3644818
                     )
                     try:
                         # Add all tag keys to the list
