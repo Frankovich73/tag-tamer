@@ -626,11 +626,11 @@ class resources_tags:
 
         elif self.unit == 'functions':
             functions_inventory = lambda_resources_tags(self.resource_type, self.region)
-            tagged_resource_inventory, returned_status = functions_inventory.get_lambda_resources_tags(self.chosen_resources, **self.session_credentials)
+            tagged_resource_inventory, returned_status = functions_inventory.get_lambda_resources_tags(**self.session_credentials)
 
         elif self.unit == 'pipelines':
             pipelines_inventory = code_pipeline_tags(self.resource_type, self.region)
-            tagged_resource_inventory, returned_status = pipelines_inventory.get_pipeline_resources_tags(self.chosen_resources, **self.session_credentials)    
+            tagged_resource_inventory, returned_status = pipelines_inventory.get_pipeline_resources_tags(**self.session_credentials)    
         
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)

@@ -456,12 +456,9 @@ class code_pipeline_tags:
             try:
                 client = this_session.client(self.resource_type, region_name=self.region)
                 try:
-                    for tag in tag_dict:
-
-                        response = client.tag_resource(
+                    response = client.tag_resource(
                             resourceArn=resource_arn,
                             tags= chosen_tags
-                        ]
                     )
                     my_status.success(message='Tags updated successfully!')
                 except botocore.exceptions.ClientError as error:
