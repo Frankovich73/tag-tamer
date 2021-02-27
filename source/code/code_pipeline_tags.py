@@ -397,10 +397,10 @@ class code_pipeline_tags:
                     )
                     try:
                         # Add all tag keys to the list
-                        for tag_key, tag_value in response['tags'].items():       
+                        for tag in response['tags']():       
                             # Exclude any AWS-applied tags which begin with "aws:"
-                            if not re.search("^aws:", tag_key) and tag_value:
-                                tag_values_inventory.append(tag_value)
+                            if not re.search("^aws:", tag['key']) and tag['value']:
+                                tag_values_inventory.append(tag['value'])
                     except:
                         #tag_values_inventory.append("No tag values found")
                         tag_values_inventory.append("")
