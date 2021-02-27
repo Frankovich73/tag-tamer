@@ -123,7 +123,7 @@ class code_pipeline_tags:
             try:
                 client = this_session.client(self.resource_type, region_name=self.region)
                 # Get all the CodePipleines in the region
-                my_pipelines = client.list_piplines()
+                my_pipelines = client.list_pipelines()
                 for item in my_pipelines['pipelines']:
                     try:
                         code_pipeline_arn=client.get_pipeline(name=item['name'])['metadata']['pipelineArn']
@@ -248,11 +248,8 @@ class code_pipeline_tags:
                 else:
                     my_status.error()
 
-        # Sort the resources based on the resource's name
-        ordered_inventory = OrderedDict()
-        ordered_inventory = sorted(resource_inventory.items(), key=lambda item: item[1])  
         #return resource_inventory, my_status.get_status()
-        return ordered_inventory, my_status.get_status()
+        return resource_inventory, my_status.get_status()
           
 
     # method - get_pipeline_resources_tags
@@ -284,9 +281,9 @@ class code_pipeline_tags:
                         response = client.list_tags_for_resource(
                             resourceArn=pipeline_arn
                         )
-                        for tag_key, tag_value in response['Tags'].items():       
-                            if not re.search("^aws:", tag_key):
-                                resource_tags[tag_key] = tag_value
+                        for tag in response['tags']:       
+                            if not re.search("^aws:", tag['key']):
+                                resource_tags[tag['key']] = tag['value']
                     except botocore.exceptions.ClientError as error:
                         log.error("Boto3 API returned error: {}".format(error))
                         resource_tags["No Tags Found"] = "No Tags Found"
@@ -341,9 +338,9 @@ class code_pipeline_tags:
                     )
                     try:
                         # Add all tag keys to the list
-                        for tag_key, _ in response['Tags'].items():       
-                            if not re.search("^aws:", tag_key):
-                                tag_keys_inventory.append(tag_key)
+                        for tag in response['tags']:       
+                            if not re.search("^aws:", tag['key']):
+                                tag_keys_inventory.append(tag['key'])
                         my_status.success(message='Resources and tags found!')
                     except:
                         tag_keys_inventory.append("No tag keys found")
@@ -400,7 +397,7 @@ class code_pipeline_tags:
                     )
                     try:
                         # Add all tag keys to the list
-                        for tag_key, tag_value in response['Tags'].items():       
+                        for tag_key, tag_value in response['tags'].items():       
                             # Exclude any AWS-applied tags which begin with "aws:"
                             if not re.search("^aws:", tag_key) and tag_value:
                                 tag_values_inventory.append(tag_value)
@@ -440,7 +437,6 @@ class code_pipeline_tags:
     def set_pipeline_resources_tags(self, resources_to_tag, chosen_tags, **session_credentials):
         my_status = execution_status()
         resources_updated_tags = dict()
-        tag_dict = dict()
 
         self.session_credentials = dict()
         self.session_credentials['AccessKeyId'] = session_credentials['AccessKeyId']
@@ -453,15 +449,19 @@ class code_pipeline_tags:
 
         # for Code Pipeline Boto3 API covert list of tags dicts to single key:value tag dict 
         for tag in chosen_tags:
-            tag_dict[tag['Key']] = tag['Value']
+            tag['key'] = tag.pop('Key')
+            tag['value'] = tag.pop('Value')
        
         for resource_arn in resources_to_tag:
             try:
                 client = this_session.client(self.resource_type, region_name=self.region)
                 try:
-                    response = client.tag_resource(
-                        resourceArn=resource_arn,
-                        tags=tag_dict
+                    for tag in tag_dict:
+
+                        response = client.tag_resource(
+                            resourceArn=resource_arn,
+                            tags= chosen_tags
+                        ]
                     )
                     my_status.success(message='Tags updated successfully!')
                 except botocore.exceptions.ClientError as error:
