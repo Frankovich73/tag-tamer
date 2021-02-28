@@ -214,15 +214,22 @@ Resources:
             cd /var/tmp
             yum -y install git dos2unix
 <<<<<<< HEAD
+<<<<<<< HEAD
             git clone https://github.com/Frankovich73/tag-tamer.git
             cd tag-tamer/source
 =======
+=======
+
+>>>>>>> 3d848ce54f975285b28cfcaaf51638d738c4130c
             git clone https://github.com/billdry/tag-tamer.git
             cd /var/tmp/tag-tamer/source/code
             dos2unix tag_tamer_parameters.json
             sed -i -e 's/"base_region": "us-east-1",/"base_region": "${AWS::Region}",/' tag_tamer_parameters.json
             cd /var/tmp/tag-tamer/source
+<<<<<<< HEAD
 >>>>>>> upstream/master
+=======
+>>>>>>> 3d848ce54f975285b28cfcaaf51638d738c4130c
             dos2unix tagtamer-install.sh
             bash tagtamer-install.sh
       Tags:
