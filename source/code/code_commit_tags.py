@@ -389,7 +389,7 @@ class code_commit_tags:
             # Get all the Code repositories in the region
             my_repositories = client.list_repositories()
             for item in my_repositories['repositories']:
-                code_repository_arn=client.get_repository(name=item['repositoryName'])['repositoryMetadata']['Arn']
+                code_repository_arn=client.get_repository(repositoryName=item['repositoryName'])['repositoryMetadata']['Arn']
                 try:
                     # Get all the tags for a given Code repository
                     response = client.list_tags_for_resource(
