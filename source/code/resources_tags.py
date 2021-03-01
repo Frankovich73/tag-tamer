@@ -915,7 +915,7 @@ class resources_tags:
             sorted_tag_values_inventory, code_pipeline_status = pipelines_inventory.get_pipeline_tag_values(**self.session_credentials)
             return sorted_tag_values_inventory, code_pipeline_status    
 
-       elif self.unit == 'repositories':
+        elif self.unit == 'repositories':
             repositories_inventory = code_commit_tags(self.resource_type, self.region)
             sorted_tag_values_inventory, code_repository_status = repositories_inventory.get_repository_tag_values(**self.session_credentials)
             return sorted_tag_values_inventory, code_repository_status    
