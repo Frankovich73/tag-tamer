@@ -438,6 +438,7 @@ class code_commit_tags:
         my_status = execution_status()
         resources_updated_tags = dict()
         tag_dict = dict()
+        self.chosen_tags = chosen_tags
 
         self.session_credentials = dict()
         self.session_credentials['AccessKeyId'] = session_credentials['AccessKeyId']
