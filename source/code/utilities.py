@@ -47,7 +47,10 @@ def get_resource_type_unit(type):
             unit = 'clusters'
         elif type == "codepipeline":
             resource_type = 'codepipeline'
-            unit = 'pipelines'    
+            unit = 'pipelines'
+        elif type == "codecommit":
+            resource_type = 'codecommit'
+            unit = 'repositories'    
         elif type == "lambda":
             resource_type = 'lambda'
             unit = 'functions'
