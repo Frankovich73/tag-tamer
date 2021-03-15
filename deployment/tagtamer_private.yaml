@@ -1,12 +1,13 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: AWS Cloudformation template for TagTamer solution components - version - RC16
+Description: (SO0132) AWS Cloudformation template for TagTamer solution components - (Version %%VERSION%%)
 Metadata: 
   AWS::CloudFormation::Interface: 
     ParameterGroups: 
       - Label:
           default: "Amazon EC2 Configuration"
         Parameters: 
-          - KeyName
+        # If you would like to use SSH, please uncomment all template areas that use the SSK Key 
+        #  - KeyName
           - CIDRIPRange
           - AMIID
       - Label:
@@ -29,11 +30,11 @@ Metadata:
            - TagTamerMultiAccounts
 
 Parameters:
-  KeyName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
-    Type: 'AWS::EC2::KeyPair::KeyName'
-    ConstraintDescription: must be the name of an existing EC2 KeyPair.
-    Default: yourkeyname
+  #KeyName:
+  #  Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+  #  Type: 'AWS::EC2::KeyPair::KeyName'
+  #  ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  #  Default: yourkeyname
   AMIID:
     Description: Select Amazon Linux AMI to use for Tag Tamer solution. Recommended to use amzn2-ami-hvm-x86_64-gp2.
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
@@ -82,15 +83,12 @@ Resources:
       AttributeDefinitions:
         - AttributeName: tag_group_name
           AttributeType: S
-      BillingMode: 'PROVISIONED'
+      BillingMode: 'PAY_PER_REQUEST'
       KeySchema:
         - AttributeName: tag_group_name
           KeyType: HASH
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: True
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
       SSESpecification:
         SSEEnabled: False
       TableName: tag_tamer_tag_groups
@@ -162,14 +160,6 @@ Resources:
       GroupName: SG-TagTamer
       VpcId: !Ref VPCID
       SecurityGroupIngress:
-        #- IpProtocol: tcp
-        #  FromPort: 80
-        #  ToPort: 80
-        #  CidrIp: !Ref CIDRIPRange
-        #- IpProtocol: tcp
-        #  FromPort: 22
-        #  ToPort: 22
-        #  CidrIp: !Ref CIDRIPRange
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
@@ -204,7 +194,7 @@ Resources:
             VolumeSize: 8
             DeleteOnTermination: true
             Encrypted: true
-      KeyName: !Ref KeyName
+      #KeyName: !Ref KeyName
       SubnetId: !Ref PrivateSubnet
       IamInstanceProfile: !Ref TagTamerInstanceProfile
       UserData:
@@ -541,7 +531,7 @@ Resources:
             - ' }'
             - '};'
       Handler: index.handler
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
       Timeout: 300
       Role: !GetAtt 
         - UserPoolClientRole

@@ -1,13 +1,14 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: AWS Cloudformation template for TagTamer solution components - version - RC17
+Description: (SO0132) AWS Cloudformation template for TagTamer solution components - (Version %%VERSION%%)
 
 Metadata: 
   AWS::CloudFormation::Interface: 
     ParameterGroups: 
       - Label:
           default: "Amazon EC2 Configuration"
-        Parameters: 
-          - KeyName
+        Parameters:
+        # If you would like to use SSH, please uncomment all template areas that use the SSK Key 
+        #  - KeyName
           - AMIID
       - Label:
           default: "ALB Configuration"
@@ -29,11 +30,11 @@ Metadata:
            - TagTamerMultiAccounts
 
 Parameters:
-  KeyName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
-    Type: 'AWS::EC2::KeyPair::KeyName'
-    ConstraintDescription: must be the name of an existing EC2 KeyPair.
-    Default: yourkeyname
+  #KeyName:
+  #  Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+  #  Type: 'AWS::EC2::KeyPair::KeyName'
+  #  ConstraintDescription: must be the name of an existing Amazon EC2 KeyPair.
+  #  Default: yourkeyname
   AMIID:
     Description: Select Amazon Linux AMI to use for Tag Tamer solution. Recommend to use amzn2-ami-hvm-x86_64-gp2.
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
@@ -330,15 +331,12 @@ Resources:
       AttributeDefinitions:
         - AttributeName: tag_group_name
           AttributeType: S
-      BillingMode: 'PROVISIONED'
+      BillingMode: 'PAY_PER_REQUEST'
       KeySchema:
         - AttributeName: tag_group_name
           KeyType: HASH
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: True
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
       TableName: tag_tamer_tag_groups
     Metadata:
         cfn_nag:
@@ -406,14 +404,6 @@ Resources:
       GroupName: SG-TagTamer
       VpcId: !Ref VPC
       SecurityGroupIngress:
-        #- IpProtocol: tcp
-        #  FromPort: 80
-        #  ToPort: 80
-        #  CidrIp: 0.0.0.0/0
-        #- IpProtocol: tcp
-        #  FromPort: 22
-        #  ToPort: 22
-        #  CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
@@ -452,7 +442,7 @@ Resources:
       SecurityGroupIds:
         - !GetAtt "InstanceSecurityGroup.GroupId"
       ImageId: !Ref AMIID
-      KeyName: !Ref KeyName
+      #KeyName: !Ref KeyName
       SubnetId: !Ref PrivateSubnetA
       IamInstanceProfile: !Ref TagTamerInstanceProfile
       UserData:
@@ -814,7 +804,7 @@ Resources:
             - ' }'
             - '};'
       Handler: index.handler
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
       Timeout: 300
       Role: !GetAtt 
         - UserPoolClientRole
@@ -893,11 +883,6 @@ Outputs:
   InstanceId:
     Description: InstanceId of the newly created EC2 instance
     Value: !Ref EC2Instance
-#  AZ:
-#    Description: Availability Zone of the newly created EC2 instance
-#    Value: !GetAtt 
-#      - EC2Instance
-#      - AvailabilityZone
   EC2InstancePrivateIP:
     Description: PrivateIP assigned to EC2Instance
     Value: !GetAtt 
@@ -911,9 +896,3 @@ Outputs:
   TagTamerURL:
     Description: Login URL for Tag Tamer Application
     Value: !Sub https://${PublicLoadBalancer.DNSName}/sign-in
-
-#  PublicIP:
-#    Description: Public IP address of the newly created EC2 instance
-#    Value: !GetAtt 
-#      - EC2Instance
-#      - PublicIp

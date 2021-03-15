@@ -7,5 +7,5 @@
 # ./run-unit-tests.sh
 #
 
-echo "All done!"
+echo "There are no unit tests available.  Refer to the Tag Tamer Implementation Guide for a list of complleted System Tests."
 
