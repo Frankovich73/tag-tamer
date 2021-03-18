@@ -15,7 +15,7 @@ SPDX-License-Identifier: MIT-0 -->
                 <div class="row">
                     <div class="col-7">
                         <h3 style="text-align:center;">Select your AWS resources</h3>
-                        <table class="table table-borderless">
+                        <table class="table table-borderless" role="presentation">
                             <tbody>
                                 <tr>
                                     <td>Check the box beside every resource you want to tag.</td>
@@ -33,6 +33,7 @@ SPDX-License-Identifier: MIT-0 -->
                                             {% for region, resource_inventory in per_account_inventory.items() %}
                                                 <h5 style="text-align:center;">AWS account: <span style="color:MediumSeaGreen;">{{ account_number }}</span></h5>    
                                                 <table style="table-layout:fixed; width:100%;" class="table table-striped table-hover">
+                                                <caption>Table contains the available AWS resources to tag.</caption>
                                                 <colgroup>
                                                     <col span="1" style="width:5%">
                                                     <col span="1" style="width:15%">
@@ -79,7 +80,7 @@ SPDX-License-Identifier: MIT-0 -->
                                 </tr>
                             </tbody>
                         </table>
-                        <table class="table table-borderless">    
+                        <table class="table table-borderless" role="presentation">    
                             <tbody>
                                 <tr>
                                     <td>            
