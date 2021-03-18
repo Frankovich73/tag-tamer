@@ -644,7 +644,7 @@ class resources_tags:
 
         elif self.unit == "repositories":
             repositories_inventory = code_commit_tags(self.resource_type, self.region)
-            tagged_resource_inventory, returned_status = repositories_inventory.get_repository_ids(**self.session_credentials)            
+            tagged_resource_inventory, returned_status = repositories_inventory.get_repository_resources_tags(**self.session_credentials)            
         
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
