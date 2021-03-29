@@ -21,6 +21,8 @@ from eks_clusters_tags import eks_clusters_tags
 from lambda_resources_tags import lambda_resources_tags
 # Import AWS Code Commit resources & tags getters & setters
 from code_commit_tags import code_commit_tags
+# Import Amazon Redshift Clusters & tags getters & setters
+from redshift_cluster_tags import redshift_cluster_resources_tags
 # Import AWS RDS resources & tags getters & setters
 from rds_resources_tags import rds_resources_tags 
 # Import logging module
@@ -412,7 +414,11 @@ class resources_tags:
         elif self.unit == "repositories":
             repositories_inventory = code_commit_tags(self.resource_type, self.region)
             named_resource_inventory, named_resource_status = repositories_inventory.get_code_repository_ids(self.filter_tags, **self.session_credentials)      
-            
+
+        elif self.unit == "redshiftclusters":
+            redshift_clusters_inventory = redshift_cluster_resources_tags(self.resource_type, self.region)
+            named_resource_inventory, named_resource_status = redshift_clusters_inventory.get_redshift_cluster_names_ids(self.filter_tags, **self.session_credentials)
+
         elif self.unit == "clusters":
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
             named_resource_inventory, named_resource_status = clusters_inventory.get_eks_clusters_ids(self.filter_tags, **self.session_credentials)
@@ -644,7 +650,11 @@ class resources_tags:
 
         elif self.unit == "repositories":
             repositories_inventory = code_commit_tags(self.resource_type, self.region)
-            tagged_resource_inventory, returned_status = repositories_inventory.get_repository_resources_tags(**self.session_credentials)            
+            tagged_resource_inventory, returned_status = repositories_inventory.get_repository_resources_tags(**self.session_credentials)
+
+        elif self.unit == "redshiftclusters":
+            redshift_clusters_inventory = redshift_cluster_resources_tags(self.resource_type, self.region)
+            tagged_resource_inventory, returned_status = redshift_clusters_inventory.get_redshift_cluster_resources_tags(**self.session_credentials)                
         
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
@@ -791,6 +801,11 @@ class resources_tags:
             sorted_tag_keys_inventory, eks_clusters_status = clusters_inventory.get_eks_clusters_keys(**self.session_credentials) 
             return sorted_tag_keys_inventory, eks_clusters_status
         
+        elif self.unit == 'redshiftclusters':
+            redshift_clusters_inventory = redshift_cluster_resources_tags(self.resource_type, self.region)
+            sorted_tag_keys_inventory, redshift_clusters_status = redshift_clusters_inventory.get_redshift_cluster_tag_keys(**self.session_credentials)
+            return sorted_tag_keys_inventory, redshift_clusters_status
+
         elif self.unit == 'rdsclusters':
             rds_clusters_inventory = rds_resources_tags(self.resource_type, self.region)
             sorted_tag_keys_inventory, rds_resources_status = rds_clusters_inventory.get_rds_tag_keys(**self.session_credentials)
@@ -919,6 +934,11 @@ class resources_tags:
             repositories_inventory = code_commit_tags(self.resource_type, self.region)
             sorted_tag_values_inventory, code_repository_status = repositories_inventory.get_repository_tag_values(**self.session_credentials)
             return sorted_tag_values_inventory, code_repository_status    
+
+        elif self.unit == 'redshiftclusters':
+            redshift_clusters_inventory = redshift_cluster_resources_tags(self.resource_type, self.region)
+            sorted_tag_values_inventory, redshift_cluster_status = redshift_clusters_inventory.get_redshift_cluster_tag_values(**self.session_credentials)
+            return sorted_tag_values_inventory, redshift_cluster_status    
 
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
@@ -1071,6 +1091,9 @@ class resources_tags:
             repositories_inventory = code_commit_tags(self.resource_type, self.region)
             resources_status = repositories_inventory.set_repository_resources_tags(resources_to_tag, chosen_tags, **self.session_credentials) 
         
+        elif self.unit == 'redshiftclusters':
+            redshift_clusters_inventory = redshift_cluster_resources_tags(self.resource_type, self.region)
+            resources_status = redshift_clusters_inventory.set_redshift_cluster_resources_tags(resources_to_tag, chosen_tags, **self.session_credentials)
         elif self.unit == 'clusters':
             clusters_inventory = eks_clusters_tags(self.resource_type, self.region)
             resources_status = clusters_inventory.set_eks_clusters_tags(self.resources_to_tag, self.chosen_tags, **self.session_credentials) 

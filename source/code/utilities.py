@@ -52,19 +52,17 @@ def get_resource_type_unit(type):
             resource_type = "ec2"
             unit = "instances"
         elif type == "eks":
-<<<<<<< HEAD
-            resource_type = 'eks'
-            unit = 'clusters'
-        elif type == "codepipeline":
-            resource_type = 'codepipeline'
-            unit = 'pipelines'
-        elif type == "codecommit":
-            resource_type = 'codecommit'
-            unit = 'repositories'    
-=======
             resource_type = "eks"
             unit = "clusters"
->>>>>>> upstream/master
+        elif type == "codepipeline":
+            resource_type = "codepipeline"
+            unit = "pipelines"
+        elif type == "codecommit":
+            resource_type = "codecommit"
+            unit = "repositories"
+        elif type == "redshift":
+            resource_type = "redshift"
+            unit = "redshiftclusters"
         elif type == "lambda":
             resource_type = "lambda"
             unit = "functions"
